@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: #334155;
+  --accent-primary: #6366f1;
+  --accent-hover: #818cf8;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* 通用组件样式 */
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-primary-600 text-white rounded-lg font-medium transition-all duration-200 hover:bg-primary-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-surface-700 text-surface-200 rounded-lg font-medium transition-all duration-200 hover:bg-surface-600 active:scale-95 border border-surface-600;
+  }
+
+  .btn-ghost {
+    @apply px-3 py-1.5 text-surface-300 rounded-lg font-medium transition-all duration-200 hover:bg-surface-700 hover:text-surface-100;
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 bg-red-600/20 text-red-400 rounded-lg font-medium transition-all duration-200 hover:bg-red-600/30 border border-red-600/30;
+  }
+
+  .card {
+    @apply bg-surface-800 rounded-xl border border-surface-700 p-4 transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply card hover:border-primary-500/50 hover:shadow-lg hover:shadow-primary-500/5;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 bg-surface-900 border border-surface-600 rounded-lg text-surface-100 placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all duration-200;
+  }
+
+  .select-field {
+    @apply w-full px-3 py-2 bg-surface-900 border border-surface-600 rounded-lg text-surface-100 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all duration-200 appearance-none cursor-pointer;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-surface-300 mb-1.5;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply badge bg-green-500/20 text-green-400;
+  }
+
+  .badge-warning {
+    @apply badge bg-yellow-500/20 text-yellow-400;
+  }
+
+  .badge-error {
+    @apply badge bg-red-500/20 text-red-400;
+  }
+
+  .badge-info {
+    @apply badge bg-blue-500/20 text-blue-400;
+  }
+
+  .section-title {
+    @apply text-lg font-semibold text-surface-100 mb-4;
+  }
+
+  .tab-active {
+    @apply text-primary-400 border-b-2 border-primary-400;
+  }
+
+  .tab-inactive {
+    @apply text-surface-400 hover:text-surface-200 border-b-2 border-transparent;
+  }
+
+  .terminal-output {
+    @apply font-mono text-sm bg-surface-950 text-surface-300 p-4 rounded-lg overflow-auto max-h-64 whitespace-pre-wrap;
+  }
+
+  .toggle-switch {
+    @apply relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 cursor-pointer;
+  }
+
+  .toggle-on {
+    @apply toggle-switch bg-primary-600;
+  }
+
+  .toggle-off {
+    @apply toggle-switch bg-surface-600;
+  }
+
+  .toggle-dot {
+    @apply inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200;
+  }
+
+  .toggle-dot-on {
+    @apply toggle-dot translate-x-6;
+  }
+
+  .toggle-dot-off {
+    @apply toggle-dot translate-x-1;
+  }
+}
+
+/* 动画 */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
