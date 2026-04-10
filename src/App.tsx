@@ -14,6 +14,7 @@ import AgentConfigPage from '@/components/pages/AgentConfigPage';
 import CategoryConfigPage from '@/components/pages/CategoryConfigPage';
 import ConcurrencyPage from '@/components/pages/ConcurrencyPage';
 import HooksPage from '@/components/pages/HooksPage';
+import PluginsPage from '@/components/pages/PluginsPage';
 import SkillsPage from '@/components/pages/SkillsPage';
 import McpPage from '@/components/pages/McpPage';
 import AdvancedPage from '@/components/pages/AdvancedPage';
@@ -144,6 +145,8 @@ const App: React.FC = () => {
         return <ConcurrencyPage />;
       case 'hooks':
         return <HooksPage />;
+      case 'plugins':
+        return <PluginsPage />;
       case 'skills':
         return <SkillsPage />;
       case 'mcps':

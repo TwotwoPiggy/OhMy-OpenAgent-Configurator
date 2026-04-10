@@ -8,7 +8,7 @@
     "build": "tsc && vite build && electron-builder",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:dev": "vite",
     "electron:build": "vite build && electron-builder",
     "postinstall": "echo '提示: Electron 需要单独安装。运行 ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npm install electron --save-dev'"
   },

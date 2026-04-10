@@ -164,9 +164,20 @@ const InstallWizard: React.FC = () => {
       }
     } else {
       appendInstallLog(ohMyOpenAgentInstalled ? t('installWizard.installLog.updateFailed') : t('installWizard.installLog.installFailed'));
-      appendInstallLog(result.error || t('installWizard.installLog.unknownError'));
-      if (result.stdout) appendInstallLog(t('installWizard.installLog.stdoutNote') + result.stdout);
-      if (result.stderr) appendInstallLog(t('installWizard.installLog.stderrNote') + result.stderr);
+      if (result.command) {
+        appendInstallLog(t('installWizard.installLog.commandNote') + result.command + '\n\n');
+      }
+      if (result.error) {
+        appendInstallLog(result.error + '\n');
+      } else {
+        appendInstallLog(t('installWizard.installLog.unknownError'));
+      }
+      if (result.stdout) {
+        appendInstallLog(t('installWizard.installLog.stdoutNote') + result.stdout);
+      }
+      if (result.stderr) {
+        appendInstallLog(t('installWizard.installLog.stderrNote') + result.stderr);
+      }
     }
 
     setInstalling(false);

@@ -34,10 +34,10 @@ const ProviderPage: React.FC = () => {
       <div className="card border-primary-600/30 bg-primary-600/5">
         <h3 className="font-semibold text-surface-200 mb-2">{t('provider.howToAuth')}</h3>
         <div className="space-y-2 text-sm text-surface-300">
-          {t('provider.authSteps', {
+          {(t('provider.authSteps', {
             returnObjects: true,
             code: <code className="bg-surface-800 px-2 py-0.5 rounded font-mono">opencode auth login</code>
-          }).map((step, index) => (
+          }) as string[]).map((step, index) => (
             <p key={index}>{step}</p>
           ))}
         </div>

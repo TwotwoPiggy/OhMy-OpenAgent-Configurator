@@ -35,7 +35,7 @@ export interface ElectronAPI {
     opencodeZen?: string;
     opencodeGo?: string;
     zaiCodingPlan?: string;
-  }) => Promise<{ success: boolean; stdout?: string; stderr?: string; error?: string }>;
+  }) => Promise<{ success: boolean; stdout?: string; stderr?: string; error?: string; command?: string }>;
   runDoctor: () => Promise<{ success: boolean; stdout?: string; stderr?: string; error?: string }>;
   listModels: () => Promise<{ success: boolean; stdout?: string; stderr?: string; error?: string }>;
   
@@ -51,6 +51,14 @@ export interface ElectronAPI {
   openFolder: (path: string) => Promise<void>;
   // 检查 Oh My OpenAgent
   checkOhMyOpenAgent: () => Promise<{ installed: boolean; version: string | null }>;
+  // 插件管理
+  readLocalPlugins: () => Promise<{
+    global: Array<{ path: string; source: string; name: string }>;
+    project: Array<{ path: string; source: string; name: string }>;
+  }>;
+  searchNpmPlugins: (query: string) => Promise<{ results: any[]; error?: string }>;
+  installNpmPlugin: (packageName: string) => Promise<{ success: boolean; error?: string }>;
+  uninstallNpmPlugin: (packageName: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const electronAPI: ElectronAPI = {
@@ -76,6 +84,10 @@ const electronAPI: ElectronAPI = {
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   openFolder: (path) => ipcRenderer.invoke('open-folder', path),
   checkOhMyOpenAgent: () => ipcRenderer.invoke('check-oh-my-openagent'),
+  readLocalPlugins: () => ipcRenderer.invoke('read-local-plugins'),
+  searchNpmPlugins: (query) => ipcRenderer.invoke('search-npm-plugins', query),
+  installNpmPlugin: (packageName) => ipcRenderer.invoke('install-npm-plugin', packageName),
+  uninstallNpmPlugin: (packageName) => ipcRenderer.invoke('uninstall-npm-plugin', packageName),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

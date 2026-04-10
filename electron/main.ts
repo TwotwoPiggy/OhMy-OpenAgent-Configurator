@@ -29,20 +29,37 @@ function stripAnsi(str: string): string {
   return str.replace(/[\u001B\u009B][[\]()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
 }
 
+interface ExecError {
+  message: string;
+  code?: string | number;
+  killed?: boolean;
+  signal?: string | null;
+  cmd?: string;
+  stdout: string;
+  stderr: string;
+}
+
 const execAsyncWithTimeout = (cmd: string, timeoutMs: number = 30000): Promise<{ stdout: string; stderr: string }> => {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       reject(new Error(`Command timed out after ${timeoutMs}ms`));
     }, timeoutMs);
-    exec(cmd, { encoding: 'utf8' }, (error, stdout, stderr) => {
+    exec(cmd, { encoding: 'utf8', shell: process.platform === 'win32' ? 'cmd.exe' : undefined }, (error, stdout, stderr) => {
       clearTimeout(timer);
       if (error) {
-        // 处理错误情况下的编码
-        const errorStdout = error.stdout ? stripAnsi(String(error.stdout)) : '';
-        const errorStderr = error.stderr ? stripAnsi(String(error.stderr)) : '';
-        reject({ ...error, stdout: errorStdout, stderr: errorStderr });
+        const errorStdout = stripAnsi(String(stdout || ''));
+        const errorStderr = stripAnsi(String(stderr || ''));
+        const execError: ExecError = {
+          message: error.message || String(error),
+          code: (error as any).code,
+          killed: (error as any).killed,
+          signal: (error as any).signal,
+          cmd: (error as any).cmd,
+          stdout: errorStdout,
+          stderr: errorStderr,
+        };
+        reject(execError);
       } else {
-        // 确保输出是字符串并去除首尾空白和 ANSI 转义序列
         const outputStdout = stripAnsi(String(stdout || '')).trim();
         const outputStderr = stripAnsi(String(stderr || '')).trim();
         resolve({ stdout: outputStdout, stderr: outputStderr });
@@ -152,6 +169,26 @@ ipcMain.handle('write-opencode-config', async (_event, content: string) => {
   }
 });
 
+// 获取平台特定的二进制包名
+function getPlatformBinaryPackage(): string | null {
+  const platform = process.platform;
+  const arch = process.arch;
+  
+  if (platform === 'win32' && arch === 'x64') {
+    return 'oh-my-opencode-windows-x64';
+  } else if (platform === 'darwin' && arch === 'x64') {
+    return 'oh-my-opencode-darwin-x64';
+  } else if (platform === 'darwin' && arch === 'arm64') {
+    return 'oh-my-opencode-darwin-arm64';
+  } else if (platform === 'linux' && arch === 'x64') {
+    return 'oh-my-opencode-linux-x64';
+  } else if (platform === 'linux' && arch === 'arm64') {
+    return 'oh-my-opencode-linux-arm64';
+  }
+  
+  return null;
+}
+
 // 运行安装命令
 ipcMain.handle('run-install', async (_event, options: {
   claude: string;
@@ -162,7 +199,14 @@ ipcMain.handle('run-install', async (_event, options: {
   opencodeGo?: string;
   zaiCodingPlan?: string;
 }) => {
-  const runtime = options.claude ? 'bunx' : 'npx';
+  let runtime = 'npx';
+  try {
+    await execAsyncWithTimeout('bun --version', 5000);
+    runtime = 'bunx';
+  } catch {
+    console.log('Bun not available, falling back to npx');
+  }
+  
   const pkg = 'oh-my-opencode';
   
   let cmd = `${runtime} ${pkg} install --no-tui`;
@@ -175,11 +219,83 @@ ipcMain.handle('run-install', async (_event, options: {
   if (options.opencodeGo) cmd += ` --opencode-go=${options.opencodeGo}`;
   if (options.zaiCodingPlan) cmd += ` --zai-coding-plan=${options.zaiCodingPlan}`;
   
+  const buildInstallCmd = (): string => {
+    let c = `${runtime} ${pkg} install --no-tui`;
+    c += ` --claude=${options.claude}`;
+    c += ` --openai=${options.openai}`;
+    c += ` --gemini=${options.gemini}`;
+    c += ` --copilot=${options.copilot}`;
+    if (options.opencodeZen) c += ` --opencode-zen=${options.opencodeZen}`;
+    if (options.opencodeGo) c += ` --opencode-go=${options.opencodeGo}`;
+    if (options.zaiCodingPlan) c += ` --zai-coding-plan=${options.zaiCodingPlan}`;
+    return c;
+  };
+  
   try {
     const { stdout, stderr } = await execAsyncWithTimeout(cmd, 120000);
-    return { success: true, stdout, stderr };
+    return { success: true, stdout, stderr, command: cmd };
   } catch (err: any) {
-    return { success: false, error: err.message, stdout: err.stdout || '', stderr: err.stderr || '' };
+    console.error('安装命令执行失败:', JSON.stringify(err, null, 2));
+    
+    const rawMessage = err?.message || '';
+    const rawStderr = err?.stderr || '';
+    const rawStdout = err?.stdout || '';
+    const combinedOutput = rawMessage + rawStderr + rawStdout;
+    
+    // 检测平台二进制文件缺失错误
+    if (combinedOutput.includes('Platform binary not installed') || combinedOutput.includes('Expected packages')) {
+      const platformPkg = getPlatformBinaryPackage();
+      if (platformPkg) {
+        console.log(`检测到平台二进制文件缺失，尝试安装 ${platformPkg}...`);
+        try {
+          const installPkgCmd = `npm install -g ${platformPkg}`;
+          await execAsyncWithTimeout(installPkgCmd, 60000);
+          
+          // 重试安装命令
+          const retryCmd = buildInstallCmd();
+          const { stdout, stderr } = await execAsyncWithTimeout(retryCmd, 120000);
+          return { 
+            success: true, 
+            stdout: `已自动安装平台二进制文件 ${platformPkg}\n\n${stdout}`, 
+            stderr,
+            command: retryCmd 
+          };
+        } catch (installErr: any) {
+          return { 
+            success: false, 
+            error: `平台二进制文件安装失败。请手动运行: npm install -g ${platformPkg}`,
+            stdout: String(installErr?.stdout || ''),
+            stderr: String(installErr?.stderr || ''),
+            command: `npm install -g ${platformPkg}`
+          };
+        }
+      }
+    }
+    
+    let errorMessage = '安装命令执行失败';
+    const rawCode = err?.code;
+    
+    if (rawMessage.includes('timed out')) {
+      errorMessage = '安装命令超时（120秒），请检查网络连接后重试';
+    } else if (rawCode === 'ENOENT' || rawMessage.includes('not recognized') || rawMessage.includes('找不到') || rawStderr.includes('not recognized')) {
+      errorMessage = `未找到 ${runtime} 命令。请确保 ${runtime === 'bunx' ? 'Bun (https://bun.sh)' : 'Node.js + npm (https://nodejs.org)'} 已安装并添加到系统 PATH`;
+    } else if (err?.killed) {
+      errorMessage = '安装进程被终止';
+    } else if (rawCode === 'EPERM' || rawMessage.includes('permission denied') || rawMessage.includes('EACCES')) {
+      errorMessage = '权限不足，请尝试以管理员身份运行此应用程序';
+    } else if (rawStderr.includes('ENOTFOUND') || rawStderr.includes('ETIMEDOUT') || rawStderr.includes('network') || rawMessage.includes('ENOTFOUND')) {
+      errorMessage = '网络连接失败，请检查网络后重试';
+    } else if (rawMessage) {
+      errorMessage = rawMessage;
+    }
+    
+    return { 
+      success: false, 
+      error: errorMessage, 
+      stdout: String(rawStdout),
+      stderr: String(rawStderr),
+      command: cmd
+    };
   }
 });
 
@@ -189,7 +305,8 @@ ipcMain.handle('run-doctor', async () => {
     const { stdout, stderr } = await execAsyncWithTimeout('bunx oh-my-opencode doctor --verbose', 60000);
     return { success: true, stdout, stderr };
   } catch (err: any) {
-    return { success: false, error: err.message, stdout: err.stdout || '', stderr: err.stderr || '' };
+    const errorMessage = err?.message || String(err) || '诊断命令执行失败';
+    return { success: false, error: errorMessage, stdout: String(err?.stdout || ''), stderr: String(err?.stderr || '') };
   }
 });
 
@@ -199,20 +316,147 @@ ipcMain.handle('list-models', async () => {
     const { stdout, stderr } = await execAsyncWithTimeout('opencode models', 30000);
     return { success: true, stdout, stderr };
   } catch (err: any) {
-    return { success: false, error: err.message, stdout: err.stdout || '', stderr: err.stderr || '' };
+    const errorMessage = err?.message || String(err) || '获取模型列表失败';
+    return { success: false, error: errorMessage, stdout: String(err?.stdout || ''), stderr: String(err?.stderr || '') };
+  }
+});
+
+// 读取本地插件目录
+// 支持两个来源：全局 ~/.config/opencode/plugins/ 和项目级 .opencode/plugins/
+ipcMain.handle('read-local-plugins', async () => {
+  const configDir = getConfigDir();
+  const globalPluginsDir = path.join(configDir, 'plugins');
+  // 项目级插件目录：相对于当前工作目录
+  const projectPluginsDir = path.join(process.cwd(), '.opencode', 'plugins');
+
+  const readDir = (dir: string, source: 'global' | 'project'): Array<{ path: string; source: string; name: string }> => {
+    const results: Array<{ path: string; source: string; name: string }> = [];
+    if (fs.existsSync(dir)) {
+      try {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+          // 支持 .js, .ts, .mjs, .cjs 插件文件，跳过目录
+          if (
+            file.endsWith('.js') ||
+            file.endsWith('.ts') ||
+            file.endsWith('.mjs') ||
+            file.endsWith('.cjs')
+          ) {
+            results.push({
+              path: path.join(dir, file),
+              source,
+              name: file,
+            });
+          }
+        }
+      } catch (err) {
+        console.error(`读取插件目录 ${dir} 失败:`, err);
+      }
+    }
+    return results;
+  };
+
+  const globalPlugins = readDir(globalPluginsDir, 'global');
+  const projectPlugins = readDir(projectPluginsDir, 'project');
+
+  return {
+    global: globalPlugins,
+    project: projectPlugins,
+  };
+});
+
+// 搜索 npm 插件 (opencode- 前缀)
+ipcMain.handle('search-npm-plugins', async (_event, query: string) => {
+  try {
+    const { stdout } = await execAsyncWithTimeout(`npm search opencode --json --prefer-online`, 30000);
+    const results = JSON.parse(stdout || '[]');
+    const filtered = results
+      .filter((p: any) =>
+        p.name.toLowerCase().includes(query.toLowerCase()) ||
+        (p.description && p.description.toLowerCase().includes(query.toLowerCase()))
+      )
+      .slice(0, 20)
+      .map((p: any) => ({
+        name: p.name,
+        version: p.version,
+        description: p.description || '',
+        author: p.maintainers?.[0]?.name || '',
+        homepage: p.homepage || '',
+        keywords: p.keywords || [],
+      }));
+    return { results: filtered };
+  } catch (err: any) {
+    // 如果 npm search 失败，尝试使用 npm view
+    try {
+      const { stdout } = await execAsyncWithTimeout(`npm view opencode-${query} --json 2>nul || echo "[]"`, 15000);
+      if (stdout && stdout !== '[]') {
+        const pkg = JSON.parse(stdout);
+        return {
+          results: [{
+            name: pkg.name,
+            version: pkg.version,
+            description: pkg.description || '',
+            author: typeof pkg.maintainers?.[0] === 'object' ? pkg.maintainers[0].name : '',
+            homepage: pkg.homepage || '',
+            keywords: pkg.keywords || [],
+          }],
+        };
+      }
+      return { results: [] };
+    } catch {
+      return { results: [], error: `搜索失败: ${err.message}` };
+    }
+  }
+});
+
+// 安装 npm 插件
+ipcMain.handle('install-npm-plugin', async (_event, packageName: string) => {
+  try {
+    // 更新 opencode.json 中的 plugin 字段
+    const configPath = path.join(getConfigDir(), 'opencode.json');
+    let config: Record<string, any> = {};
+    if (fs.existsSync(configPath)) {
+      const content = fs.readFileSync(configPath, 'utf-8');
+      config = JSON.parse(content);
+    }
+    if (!config.plugin) config.plugin = [];
+    if (!config.plugin.includes(packageName)) {
+      config.plugin.push(packageName);
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+});
+
+// 卸载 npm 插件
+ipcMain.handle('uninstall-npm-plugin', async (_event, packageName: string) => {
+  try {
+    // 从 opencode.json 的 plugin 字段中移除
+    const configPath = path.join(getConfigDir(), 'opencode.json');
+    if (fs.existsSync(configPath)) {
+      const content = fs.readFileSync(configPath, 'utf-8');
+      const config = JSON.parse(content);
+      if (config.plugin) {
+        config.plugin = config.plugin.filter((p: string) => p !== packageName);
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+      }
+    }
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
   }
 });
 
 // 检查 Oh My OpenAgent 是否安装
 ipcMain.handle('check-oh-my-openagent', async () => {
   try {
-    // 尝试运行 doctor 命令来检测是否安装
-    const { stdout, stderr } = await execAsyncWithTimeout('bunx oh-my-opencode --version', 10000);
+    const { stdout } = await execAsyncWithTimeout('bunx oh-my-opencode --version', 10000);
     return { installed: true, version: stdout.trim() };
   } catch {
     try {
-      // 尝试使用 npx
-      const { stdout, stderr } = await execAsyncWithTimeout('npx oh-my-opencode --version', 10000);
+      const { stdout } = await execAsyncWithTimeout('npx oh-my-opencode --version', 10000);
       return { installed: true, version: stdout.trim() };
     } catch {
       return { installed: false, version: null };

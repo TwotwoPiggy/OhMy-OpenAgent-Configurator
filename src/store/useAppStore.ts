@@ -13,6 +13,7 @@ import type {
   TmuxConfig,
   SkillExtension,
   McpExtension,
+  PluginExtension,
   OpencodeConfig,
 } from '@/types';
 import { mergeConfig, generateDefaultConfig } from '@/utils/configUtils';
@@ -65,6 +66,7 @@ interface AppState {
   // Extension management
   installedSkills: SkillExtension[]; // 已安装的技能
   installedMcps: McpExtension[];    // 已安装的 MCP 扩展
+  installedPlugins: PluginExtension[]; // 已安装的插件
   
   // Actions
   setConfig: (config: OMConfig) => void;
@@ -126,6 +128,13 @@ interface AppState {
   addMcp: (mcp: McpExtension) => void;
   removeMcp: (mcpId: string) => void;
   toggleMcp: (mcpId: string) => void;
+
+  // 插件管理
+  // Plugin management
+  addPlugin: (plugin: PluginExtension) => void;
+  removePlugin: (pluginId: string) => void;
+  togglePlugin: (pluginId: string) => void;
+  setInstalledPlugins: (plugins: PluginExtension[]) => void;
   
   // 禁用列表管理
   // Disabled list management
@@ -195,6 +204,7 @@ export const useAppStore = create<AppState>((set) => ({
   
   installedSkills: [],
   installedMcps: [],
+  installedPlugins: [],
   
   // Actions
   setConfig: (config) => set({ config }),
@@ -339,6 +349,24 @@ export const useAppStore = create<AppState>((set) => ({
         m.id === mcpId ? { ...m, enabled: !m.enabled } : m
       ),
     })),
+
+  // 插件管理
+  // Plugin management
+  addPlugin: (plugin) =>
+    set((state) => ({
+      installedPlugins: [...state.installedPlugins, plugin],
+    })),
+  removePlugin: (pluginId) =>
+    set((state) => ({
+      installedPlugins: state.installedPlugins.filter((p) => p.id !== pluginId),
+    })),
+  togglePlugin: (pluginId) =>
+    set((state) => ({
+      installedPlugins: state.installedPlugins.map((p) =>
+        p.id === pluginId ? { ...p, enabled: !p.enabled } : p
+      ),
+    })),
+  setInstalledPlugins: (plugins) => set({ installedPlugins: plugins }),
   
   // 禁用列表管理
   // Disabled list management

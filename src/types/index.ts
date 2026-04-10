@@ -5,6 +5,15 @@
 
 // Electron API 类型声明
 // Electron API type declarations
+export interface NpmPluginInfo {
+  name: string;
+  version: string;
+  description: string;
+  author: string;
+  homepage: string;
+  keywords: string[];
+}
+
 export interface ElectronAPI {
   /**
    * 检查 opencode 安装状态
@@ -119,6 +128,33 @@ export interface ElectronAPI {
    * Check oh-my-openagent installation status
    */
   checkOhMyOpenAgent: () => Promise<{ installed: boolean; version: string | null }>;
+  
+  /**
+   * 读取本地插件目录
+   * Read local plugins directory
+   */
+  readLocalPlugins: () => Promise<{
+    global: Array<{ path: string; source: string; name: string }>;
+    project: Array<{ path: string; source: string; name: string }>;
+  }>;
+  
+  /**
+   * 搜索 npm 插件
+   * Search npm plugins
+   */
+  searchNpmPlugins: (query: string) => Promise<{ results: NpmPluginInfo[]; error?: string }>;
+  
+  /**
+   * 安装 npm 插件
+   * Install npm plugin
+   */
+  installNpmPlugin: (packageName: string) => Promise<{ success: boolean; error?: string }>;
+  
+  /**
+   * 卸载 npm 插件
+   * Uninstall npm plugin
+   */
+  uninstallNpmPlugin: (packageName: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 /**
@@ -157,6 +193,7 @@ export interface CommandResult {
   stdout?: string;
   stderr?: string;
   error?: string;
+  command?: string;
 }
 
 /**
@@ -529,12 +566,49 @@ export interface McpExtension {
 }
 
 /**
+ * 插件扩展
+ * Plugin extension
+ */
+export interface PluginExtension {
+  id: string;
+  name: string;
+  description: string;
+  version: string;
+  author: string;
+  source: 'npm' | 'local';
+  /** npm package name, e.g. "opencode-wakatime" */
+  npmPackage?: string;
+  /** Path to local plugin file */
+  localPath?: string;
+  /** Source URL for local plugins */
+  sourceUrl?: string;
+  installed: boolean;
+  enabled: boolean;
+  tags: string[];
+}
+
+/**
+ * NPM 插件搜索结果
+ * NPM plugin search result
+ */
+export interface NpmSearchResult {
+  name: string;
+  version: string;
+  description: string;
+  author: string;
+  homepage: string;
+  repository?: string;
+  keywords: string[];
+}
+
+/**
  * 扩展注册表
  * Extension registry
  */
 export interface ExtensionRegistry {
   skills: SkillExtension[];
   mcps: McpExtension[];
+  plugins: PluginExtension[];
 }
 
 /**

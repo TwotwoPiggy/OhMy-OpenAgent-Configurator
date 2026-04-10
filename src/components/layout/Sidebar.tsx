@@ -15,6 +15,7 @@ import {
   Code2,
   ChevronLeft,
   ChevronRight,
+  Package,
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -29,6 +30,7 @@ const Sidebar: React.FC = () => {
     { id: 'categories', label: t('sidebar.categories'), icon: Layers },
     { id: 'concurrency', label: t('sidebar.concurrency'), icon: Activity },
     { id: 'hooks', label: t('sidebar.hooks'), icon: Link2 },
+    { id: 'plugins', label: t('sidebar.plugins'), icon: Package },
     { id: 'skills', label: t('sidebar.skills'), icon: Sparkles },
     { id: 'mcps', label: t('sidebar.mcps'), icon: Plug },
     { id: 'advanced', label: t('sidebar.advanced'), icon: Settings },
