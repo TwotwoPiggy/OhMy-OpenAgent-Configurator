@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <!-- 圆角方形背景 -->
+  <rect x="0" y="0" width="256" height="256" rx="56" ry="56" fill="url(#bg)"/>
+  <!-- 六边形齿轮图标 -->
+  <g transform="translate(128,128)">
+    <!-- 外圈六边形轮廓 -->
+    <polygon points="0,-68 58.89,-34 58.89,34 0,68 -58.89,34 -58.89,-34" fill="none" stroke="#94a3b8" stroke-width="3" opacity="0.6"/>
+    <!-- 齿轮主体 -->
+    <g fill="#e2e8f0">
+      <!-- 齿轮外齿 (8个齿) -->
+      <path d="M0,-48 L7,-48 L9,-40 L16,-38 L22,-44 L28,-38 L24,-32 L26,-25 L34,-23 L34,-15 L26,-13 L24,-6 L28,0 L22,6 L16,0 L9,2 L7,10 L0,10 L-7,10 L-9,2 L-16,0 L-22,6 L-28,0 L-24,-6 L-26,-13 L-34,-15 L-34,-23 L-26,-25 L-24,-32 L-28,-38 L-22,-44 L-16,-38 L-9,-40 L-7,-48 Z" />
+      <!-- 中心圆孔 -->
+      <circle cx="0" cy="0" r="14" fill="#1e293b"/>
+      <!-- 内圈装饰 -->
+      <circle cx="0" cy="0" r="20" fill="none" stroke="#e2e8f0" stroke-width="2.5" opacity="0.3"/>
+    </g>
+    <!-- 齿轮内部十字/连接线装饰 -->
+    <g stroke="#94a3b8" stroke-width="2" opacity="0.5">
+      <line x1="0" y1="-18" x2="0" y2="-8"/>
+      <line x1="0" y1="8" x2="0" y2="18"/>
+      <line x1="-18" y1="0" x2="-8" y2="0"/>
+      <line x1="8" y1="0" x2="18" y2="0"/>
+    </g>
+  </g>
+</svg>

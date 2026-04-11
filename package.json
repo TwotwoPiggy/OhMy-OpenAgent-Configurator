@@ -5,44 +5,38 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder",
+    "build": "tsc && vite build && electron-builder && npm run clean-locales",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "electron:dev": "vite",
-    "electron:build": "vite build && electron-builder",
+    "electron:build": "vite build && electron-builder && npm run clean-locales",
+    "clean-locales": "powershell -ExecutionPolicy Bypass -File ./scripts/clean-locales.ps1",
     "postinstall": "echo '提示: Electron 需要单独安装。运行 ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npm install electron --save-dev'"
   },
   "dependencies": {
-    "axios": "^1.7.0",
-    "framer-motion": "^11.11.0",
     "i18next": "^26.0.3",
     "jsonc-parser": "^3.3.1",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-hot-toast": "^2.4.1",
     "react-i18next": "^17.0.2",
-    "react-router-dom": "^6.28.0",
-    "semver": "^7.6.0",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@types/semver": "^7.5.8",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
-    "concurrently": "^9.1.0",
     "electron": "^33.0.0",
     "electron-builder": "^25.1.8",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
+    "terser": "^5.46.1",
     "typescript": "^5.7.0",
     "vite": "^6.0.0",
     "vite-plugin-electron": "^0.28.0",
-    "vite-plugin-electron-renderer": "^0.14.6",
-    "wait-on": "^8.0.1"
+    "vite-plugin-electron-renderer": "^0.14.6"
   },
   "build": {
     "appId": "com.ohmyopenagent.configurator",
@@ -55,6 +49,11 @@
       "dist-electron/**/*"
     ],
     "publish": null,
+    "asar": true,
+    "asarUnpack": [
+      "**/*.node"
+    ],
+    "compression": "maximum",
     "mac": {
       "target": "dmg",
       "icon": "public/icon.png"
@@ -63,18 +62,25 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
-      "icon": "public/icon.png",
-      "signingHashAlgorithms": ["sha256"]
+      "icon": "public/icon.ico",
+      "signingHashAlgorithms": [
+        "sha256"
+      ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Oh My OpenAgent Configurator"
+      "shortcutName": "Oh My OpenAgent Configurator",
+      "deleteAppDataOnUninstall": true,
+      "installerIcon": "public/icon.ico",
+      "uninstallerIcon": "public/icon.ico"
     },
     "linux": {
       "target": "AppImage",

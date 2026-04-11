@@ -49,6 +49,8 @@ export interface ElectronAPI {
   openExternal: (url: string) => Promise<void>;
   // 打开本地文件夹
   openFolder: (path: string) => Promise<void>;
+  // 切换开发者工具
+  toggleDevTools: () => Promise<void>;
   // 检查 Oh My OpenAgent
   checkOhMyOpenAgent: () => Promise<{ installed: boolean; version: string | null }>;
   // 插件管理
@@ -83,6 +85,7 @@ const electronAPI: ElectronAPI = {
   
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   openFolder: (path) => ipcRenderer.invoke('open-folder', path),
+  toggleDevTools: () => ipcRenderer.invoke('toggle-devtools'),
   checkOhMyOpenAgent: () => ipcRenderer.invoke('check-oh-my-openagent'),
   readLocalPlugins: () => ipcRenderer.invoke('read-local-plugins'),
   searchNpmPlugins: (query) => ipcRenderer.invoke('search-npm-plugins', query),

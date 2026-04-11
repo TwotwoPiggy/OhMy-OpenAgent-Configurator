@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, dialog, Menu, MenuItem } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -547,6 +547,11 @@ ipcMain.handle('open-external', async (_event, url: string) => {
   await shell.openExternal(url);
 });
 
+// 切换开发者工具
+ipcMain.handle('toggle-devtools', async () => {
+  mainWindow?.webContents.toggleDevTools();
+});
+
 // 打开本地文件夹
 ipcMain.handle('open-folder', async (_event, path: string) => {
   await shell.openPath(path);
@@ -554,6 +559,9 @@ ipcMain.handle('open-folder', async (_event, path: string) => {
 
 // 创建窗口
 function createWindow() {
+  // 隐藏默认菜单栏
+  Menu.setApplicationMenu(null);
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -572,11 +580,32 @@ function createWindow() {
   // 开发环境加载 Vite dev server
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
-  
+
+  // 右键上下文菜单：包含开发者工具选项
+  mainWindow.webContents.on('context-menu', (_event, params) => {
+    const contextMenu = new Menu();
+    contextMenu.append(new MenuItem({
+      label: '开发者工具',
+      submenu: [
+        {
+          label: '打开/关闭开发者工具',
+          accelerator: (process.platform === 'darwin' ? 'Cmd' : 'Ctrl') + '+Shift+I',
+          click: () => mainWindow?.webContents.toggleDevTools(),
+        },
+        { type: 'separator' },
+        {
+          label: '刷新页面',
+          accelerator: (process.platform === 'darwin' ? 'Cmd' : 'Ctrl') + '+R',
+          click: () => mainWindow?.webContents.reload(),
+        },
+      ],
+    }));
+    contextMenu.popup({ window: mainWindow!, x: params.x, y: params.y });
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });

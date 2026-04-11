@@ -43,4 +43,21 @@ export default defineConfig({
       '@electron': path.resolve(__dirname, './electron'),
     },
   },
+  build: {
+  rollupOptions: {
+    output: {
+      manualChunks: {
+        vendor: ['react', 'react-dom'],
+        ui: ['lucide-react']
+      }
+    }
+  },
+  minify: 'terser',
+  terserOptions: {
+    compress: {
+      drop_console: true,
+      drop_debugger: true
+    }
+  }
+}
 });
