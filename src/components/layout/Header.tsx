@@ -170,10 +170,10 @@ const Header: React.FC = () => {
         <button onClick={handleSave} className="btn-ghost" title={t('header.save')}>
           <Save size={16} />
         </button>
-        <button onClick={handleExport} className="btn-ghost" title={t('header.export')}>
+        <button onClick={handleImport} className="btn-ghost" title={t('header.import')}>
           <Download size={16} />
         </button>
-        <button onClick={handleImport} className="btn-ghost" title={t('header.import')}>
+        <button onClick={handleExport} className="btn-ghost" title={t('header.export')}>
           <Upload size={16} />
         </button>
         <button
