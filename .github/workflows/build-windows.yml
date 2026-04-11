@@ -71,9 +71,7 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
-          ELECTRON_BUILDER_PUBLISH: never
 
       - name: Release
         uses: softprops/action-gh-release@v2
