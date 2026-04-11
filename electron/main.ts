@@ -559,7 +559,7 @@ function createWindow() {
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    title: 'Oh My OpenAgent 配置器',
+    title: 'Oh My OpenAgent Configurator',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     backgroundColor: '#0f172a',
     webPreferences: {

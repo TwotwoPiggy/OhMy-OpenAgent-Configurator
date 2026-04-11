@@ -46,7 +46,7 @@
   },
   "build": {
     "appId": "com.ohmyopenagent.configurator",
-    "productName": "Oh My OpenAgent 配置器",
+    "productName": "Oh My OpenAgent Configurator",
     "directories": {
       "output": "release"
     },
@@ -73,7 +73,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Oh My OpenAgent 配置器"
+      "shortcutName": "Oh My OpenAgent Configurator"
     },
     "linux": {
       "target": "AppImage",

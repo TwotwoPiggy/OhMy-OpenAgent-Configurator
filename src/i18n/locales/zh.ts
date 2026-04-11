@@ -44,7 +44,7 @@ export const zh = {
     stderr: '--- stderr ---\n'
   },
   overview: {
-    welcome: '👋 Oh My OpenAgent 配置器',
+    welcome: '👋 Oh My OpenAgent Configurator',
     welcomeSubtitle: '快速配置你的 AI Agent 多模型编排框架',
     environmentStatus: '环境状态',
     notInstalled: '未安装',

@@ -147,7 +147,7 @@ MIT License
 
 ---
 
-# Oh My OpenAgent 配置器
+# Oh My OpenAgent Configurator
 
 [English Version](#oh-my-openagent-configurator)
 
