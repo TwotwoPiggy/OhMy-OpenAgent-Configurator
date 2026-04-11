@@ -54,6 +54,7 @@
       "dist/**/*",
       "dist-electron/**/*"
     ],
+    "publish": null,
     "mac": {
       "target": "dmg",
       "icon": "public/icon.png"
