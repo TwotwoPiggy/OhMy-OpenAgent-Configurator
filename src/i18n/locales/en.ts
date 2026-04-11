@@ -202,7 +202,7 @@ export const en = {
     },
     ccSwitch: {
       title: '🔄 CC-Switch Configuration Tool',
-      description: 'You can use the {{ccSwitch}} open-source project for provider configuration, simplifying the multi-provider management process.'
+      description: 'You can use the <ccSwitch>cc-switch</ccSwitch> open-source project for provider configuration, simplifying the multi-provider management process.'
     }
   },
   agentConfig: {

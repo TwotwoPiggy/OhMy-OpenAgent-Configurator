@@ -202,7 +202,7 @@ export const zh = {
     },
     ccSwitch: {
       title: '🔄 CC-Switch 配置工具',
-      description: '可以使用 {{ccSwitch}} 开源项目进行 provider 配置，简化多 provider 管理流程。'
+      description: '可以使用 <ccSwitch>cc-switch</ccSwitch> 开源项目进行 provider 配置，简化多 provider 管理流程。'
     }
   },
   agentConfig: {

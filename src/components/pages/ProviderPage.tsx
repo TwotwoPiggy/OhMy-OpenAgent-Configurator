@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { useAppStore } from '@/store/useAppStore';
 import { PROVIDERS } from '@/data/constants';
 import { mergeProviderConfig } from '@/utils/configUtils';
@@ -145,11 +145,11 @@ const ProviderPage: React.FC = () => {
       <div className="card border-purple-600/30 bg-purple-600/5">
         <h3 className="font-semibold text-surface-200 mb-2">{t('provider.ccSwitch.title')}</h3>
         <p className="text-sm text-surface-300 mb-3">
-          {t('provider.ccSwitch.description', {
+          <Trans i18nKey="provider.ccSwitch.description" components={{
             ccSwitch: <span onClick={() => window.electronAPI.openExternal('https://github.com/farion1231/cc-switch')} className="text-primary-400 hover:underline cursor-pointer flex items-center gap-1 inline-flex">
               cc-switch <ExternalLink size={12} />
             </span>
-          })}
+          }} />
         </p>
       </div>
     </div>
