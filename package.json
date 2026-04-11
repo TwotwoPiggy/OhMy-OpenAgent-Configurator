@@ -59,8 +59,21 @@
       "icon": "public/icon.png"
     },
     "win": {
-      "target": "nsis",
-      "icon": "public/icon.png"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "public/icon.png",
+      "signingHashAlgorithms": ["sha256"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Oh My OpenAgent 配置器"
     },
     "linux": {
       "target": "AppImage",
